@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Text Proofreader & URL Tracker",
+  "version": "2.0",
+  "description": "Corrects text using Google's Proofreader API and tracks URL insertions across websites.",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "trial_tokens": [
+    "A/rF4Dm2O8ltWk/dmQGh4VaQ6Tpj6LtyPQ0V8CP5ljoIhijaIAnyz/npajuEd4QAHp4KiQJpZFjzEAi6oD7mtgAAAACFeyJvcmlnaW4iOiJjaHJvbWUtZXh0ZW5zaW9uOi8vbG5rbWplZmplb25mbW9wam1uZGFuYWViZGhjbGdnZmIiLCJmZWF0dXJlIjoiQUlQcm9vZnJlYWRlckFQSSIsImV4cGlyeSI6MTc3OTE0ODgwMCwiaXNUaGlyZFBhcnR5Ijp0cnVlfQ=="
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}

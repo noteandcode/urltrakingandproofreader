@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proofreader</title>
+  <style>
+    body { margin: 15px; font-family: Arial, sans-serif; width: 400px; }
+    textarea { width: 100%; min-height: 100px; margin-bottom: 10px; }
+    input[type="url"] { width: 100%; padding: 6px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    .button-group { display: flex; gap: 8px; margin-bottom: 10px; }
+    button { flex: 1; padding: 8px; cursor: pointer; border: 1px solid #ccc; background: #f5f5f5; border-radius: 4px; font-size: 13px; }
+    button:hover { background: #e0e0e0; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    #result { margin-top: 10px; white-space: pre-wrap; padding: 10px; background: #f9f9f9; border-radius: 4px; min-height: 50px; }
+    .error { color: #d92d2d; font-weight: bold; background: #ffeeee; border-bottom: 2px solid #d92d2d; padding: 0 2px; }
+    #progress { color: #666; margin-top: 5px; font-size: 12px; font-style: italic; }
+    .success { color: #2d9d2d; font-weight: bold; }
+    .toggle-container { margin-bottom: 10px; }
+    label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    input[type="checkbox"] { cursor: pointer; }
+    .section { margin-top: 20px; padding-top: 15px; border-top: 2px solid #ddd; }
+    .section h3 { margin-top: 0; font-size: 16px; }
+    .url-list { max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 8px; background: white; border-radius: 4px; margin-bottom: 10px; }
+    .url-item { padding: 4px 8px; margin: 4px 0; background: #f0f0f0; border-radius: 3px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+    .url-item button { padding: 2px 8px; font-size: 11px; }
+    .empty-state { color: #999; font-style: italic; text-align: center; padding: 10px; }
+    .log-entry { padding: 8px; margin: 6px 0; background: #f9f9f9; border-left: 4px solid #4CAF50; font-size: 12px; border-radius: 3px; }
+    .log-timestamp { color: #666; font-size: 11px; margin-bottom: 4px; }
+    .log-url { color: #2196F3; font-weight: bold; margin: 2px 0; }
+    .log-page { color: #FF9800; font-size: 11px; margin: 2px 0; }
+    .log-text { color: #333; background: #fff; padding: 4px; border-radius: 2px; margin-top: 4px; font-family: monospace; font-size: 11px; max-height: 60px; overflow-y: auto; }
+    .log-container { max-height: 250px; overflow-y: auto; border: 1px solid #ddd; padding: 8px; background: white; border-radius: 4px; margin-bottom: 10px; }
+    .tab-buttons { display: flex; gap: 5px; margin-bottom: 10px; }
+    .tab-button { flex: 1; padding: 10px; background: #e0e0e0; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; }
+    .tab-button.active { background: #4CAF50; color: white; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .info-box { background: #e3f2fd; border-left: 4px solid #2196F3; padding: 10px; margin-bottom: 10px; font-size: 12px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div class="tab-buttons">
+    <button class="tab-button active" data-tab="proofreader">Proofreader</button>
+    <button class="tab-button" data-tab="urls">URL Tracking</button>
+    <button class="tab-button" data-tab="logs">Activity Log</button>
+  </div>
+
+  <!-- Proofreader Tab -->
+  <div id="proofreader-tab" class="tab-content active">
+    <h2>Text Proofreader</h2>
+    <textarea id="proofreader_input" placeholder="Paste your text here"></textarea>
+    
+    <div class="toggle-container">
+      <label>
+        <input type="checkbox" id="show_mistakes" checked>
+        Show spelling mistakes
+      </label>
+    </div>
+    
+    <div class="button-group">
+      <button id="proof_button">Check Text</button>
+      <button id="copy_button" disabled>Copy to Clipboard</button>
+    </div>
+    
+    <div id="progress"></div>
+    <div id="result"></div>
+  </div>
+
+  <!-- URL Tracking Tab -->
+  <div id="urls-tab" class="tab-content">
+    <h2>URL Tracking</h2>
+    <div class="info-box">
+      💡 Add URLs to track. When you insert them into any webpage, the extension will log the activity.
+    </div>
+    <input type="url" id="url_input" placeholder="Enter URL to track (e.g., https://example.com)">
+    <div class="button-group">
+      <button id="add_url_button">Add URL to Track</button>
+    </div>
+    <div id="url_message"></div>
+    
+    <h3>Tracked URLs</h3>
+    <div class="url-list" id="url_list">
+      <div class="empty-state">No URLs being tracked yet</div>
+    </div>
+    
+    <div class="button-group">
+      <button id="clear_urls_button">Clear All URLs</button>
+    </div>
+  </div>
+
+  <!-- Logs Tab -->
+  <div id="logs-tab" class="tab-content">
+    <h2>URL Insertion Log</h2>
+    <div class="info-box">
+      📋 This log shows when and where your tracked URLs were inserted into webpages.
+    </div>
+    <div class="log-container" id="log_container">
+      <div class="empty-state">No URL insertions logged yet</div>
+    </div>
+    
+    <div class="button-group">
+      <button id="download_csv_button">Download CSV</button>
+      <button id="download_json_button">Download JSON</button>
+    </div>
+    
+    <div class="button-group">
+      <button id="clear_log_button">Clear Log</button>
+    </div>
+    
+    <div id="log_message"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
